@@ -6,6 +6,9 @@ os:
   - linux
   - osx
 
+env:
+  - LIBGDIPLUS_VERSION_PREFIX=4.9.0
+
 addons:
   apt:
     packages:
@@ -18,6 +21,7 @@ addons:
     - gettext
     - cmake
     - git
+    - osc
     
 install:
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install glib cairo libexif; fi
@@ -50,3 +54,6 @@ script:
 # Run System.Windows.Forms on Linux only
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then exit 0; fi
 - xvfb-run make -C mcs/class/System.Windows.Forms run-test
+
+after_success:
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then ./make-rpm.sh; fi

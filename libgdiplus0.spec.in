@@ -45,6 +45,7 @@ Windows.Forms.
 
 %build
 export CFLAGS="$RPM_OPT_FLAGS"
+./autogen.sh
 %configure
 make
 
