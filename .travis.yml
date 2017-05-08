@@ -34,7 +34,6 @@ script:
 - make install
 - set +e
 
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then exit 0; fi
 - echo "travis_fold:start:build_mono"
 - cd ..
 - git clone --depth 1 https://github.com/mono/mono
@@ -45,6 +44,9 @@ script:
 - make -C mcs/class/System.Windows.Forms test
 - echo "travis_fold:end:build_mono"
 
-# Run the System.Drawing and System.Windows.Forms tests.
+# Run the System.Drawing tests on all platforms
 - make -C mcs/class/System.Drawing run-test
+
+# Run System.Windows.Forms on Linux only
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then exit 0; fi
 - xvfb-run make -C mcs/class/System.Windows.Forms run-test
