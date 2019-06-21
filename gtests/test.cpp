@@ -19,7 +19,7 @@
 TEST(RegionTests, GetRegionScans_CustomMatrix_TransformsRegionScans) {
 	STARTUP
 
-	GpMatrix* matrix = NULL;
+		GpMatrix* matrix = NULL;
 
 	ASSERT_EQ(0, GdipCreateMatrix(&matrix));
 	ASSERT_EQ(0, GdipTranslateMatrix(matrix, 10, 11, MatrixOrderPrepend));
@@ -44,7 +44,7 @@ TEST(RegionTests, GetRegionScans_CustomMatrix_TransformsRegionScans) {
 TEST(RegionTests, Xor_GraphicsPath_Success) {
 	STARTUP
 
-	GpRegion* region = NULL;
+		GpRegion* region = NULL;
 	ASSERT_EQ(0, GdipCreateRegion(&region));
 
 	GpRectF rectangles[] =
@@ -71,7 +71,7 @@ TEST(RegionTests, Xor_GraphicsPath_Success) {
 TEST(RegionTests, GdipGetPathWorldBounds) {
 	STARTUP
 
-	GpRegion* region = NULL;
+		GpRegion* region = NULL;
 	ASSERT_EQ(0, GdipCreateRegion(&region));
 
 	GpRectF rectangles[] =
@@ -93,13 +93,40 @@ TEST(RegionTests, GdipGetPathWorldBounds) {
 	SHUTDOWN
 }
 
-TEST(GraphicsTests, FromHdcInternal_GetDC_ReturnsExpected) {
+TEST(GraphicsTest, FromHdcInternal_GetDC_ReturnsExpected) {
 	STARTUP
 
-	HDC hdc = GetDC(NULL);
+		HDC hdc = GetDC(NULL);
 
 	GpGraphics* graphics = NULL;
 	ASSERT_EQ(0, GdipCreateFromHDC(hdc, &graphics));
+
+	SHUTDOWN
+}
+
+TEST(GraphicsTest, CustomPixelFormat_GetPixels_ReturnsExpected) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	ASSERT_EQ(0, GdipCreateBitmapFromScan0(2, 1, 0, PixelFormat24bppRGB, NULL, &bitmap));
+
+	GpRect rect = { 0, 0, 2, 1 };
+	BitmapData data;
+
+	ASSERT_EQ(0, GdipBitmapLockBits(bitmap, &rect, ImageLockModeRead, PixelFormat24bppRGB, &data));
+	ASSERT_EQ(0, GdipBitmapUnlockBits(bitmap, &data));
+
+	ASSERT_EQ(0, GdipDisposeImage(bitmap));
+
+	SHUTDOWN
+}
+
+TEST(GraphicsTest, FromHicon_InvalidHandle_ThrowsArgumentException) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	HICON icon = (HICON)10;
+	ASSERT_EQ(NotImplemented, GdipCreateBitmapFromHICON(icon, &bitmap));
 
 	SHUTDOWN
 }
