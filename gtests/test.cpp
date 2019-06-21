@@ -92,3 +92,14 @@ TEST(RegionTests, GdipGetPathWorldBounds) {
 
 	SHUTDOWN
 }
+
+TEST(GraphicsTests, FromHdcInternal_GetDC_ReturnsExpected) {
+	STARTUP
+
+	HDC hdc = GetDC(NULL);
+
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(0, GdipCreateFromHDC(hdc, &graphics));
+
+	SHUTDOWN
+}
