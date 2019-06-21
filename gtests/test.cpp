@@ -130,3 +130,36 @@ TEST(GraphicsTest, FromHicon_InvalidHandle_ThrowsArgumentException) {
 
 	SHUTDOWN
 }
+
+TEST(ImageAttributesTests, Clone_Success) {
+	STARTUP
+
+	GpRect rect = { 0, 0, 64, 64 };
+	GpBitmap *bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	GpImageAttributes* attributes = NULL;
+
+	ColorMatrix matrix =
+	{{
+		{ 1, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0 },
+		{ 0, 0, 1, 0, 0 },
+		{ 0, 0, 0, 1, 0 },
+		{ 0, 0, 0, 0, 0 },
+	}};
+
+	ASSERT_EQ(0, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(0, GdipGetImageGraphicsContext(bitmap, &graphics));
+	ASSERT_EQ(0, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(0, GdipSetImageAttributesColorMatrix(attributes, ColorAdjustTypeDefault, true, &matrix, NULL, ColorMatrixFlagsDefault));
+
+	GpImageAttributes* attributesClone = NULL;
+	ASSERT_EQ(0, GdipCloneImageAttributes(attributes, &attributesClone));
+
+	ASSERT_EQ(0, GdipDisposeImageAttributes(attributesClone));
+	ASSERT_EQ(0, GdipDisposeImageAttributes(attributes));
+	ASSERT_EQ(0, GdipDeleteGraphics(graphics));
+	ASSERT_EQ(0, GdipDisposeImage(bitmap));
+	
+	SHUTDOWN
+}
