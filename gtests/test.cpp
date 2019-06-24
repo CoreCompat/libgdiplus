@@ -4,7 +4,6 @@
 #define WIN32
 #include "..\src\GdiPlusFlat.h"
 
-
 #define STARTUP \
     ULONG_PTR gdiplusToken; \
     GdiplusStartupInput gdiplusStartupInput; \
@@ -163,3 +162,135 @@ TEST(ImageAttributesTests, Clone_Success) {
 	
 	SHUTDOWN
 }
+
+TEST(InstalledFontCollectionTests, Ctor_Default) {
+	STARTUP
+
+	GpFontCollection* fontCollection = NULL;
+	ASSERT_EQ(0, GdipNewInstalledFontCollection(&fontCollection));
+
+	INT numFound = 0;
+	ASSERT_EQ(0, GdipGetFontCollectionFamilyCount(fontCollection, &numFound));
+	ASSERT_NE(0, numFound);
+
+	SHUTDOWN
+}
+
+TEST(MatrixTests, Ctor_FloatingPointBoundsInElements) {
+	STARTUP
+
+	float values[3] = { NAN, INFINITY, -INFINITY };
+
+	for (int i = 0; i < 3; i++)
+	{
+		float f = values[i];
+		GpMatrix* matrix = NULL;
+
+		ASSERT_EQ(0, GdipCreateMatrix2(f, 0, 0, 1, 0, 0, &matrix));
+
+		BOOL result;
+		ASSERT_EQ(0, GdipIsMatrixIdentity(matrix, &result));
+		ASSERT_EQ(FALSE, result);
+
+		ASSERT_EQ(0, GdipIsMatrixInvertible(matrix, &result));
+		ASSERT_EQ(FALSE, result);
+
+		REAL* elements = (REAL*)malloc(8 * sizeof(float));;
+		GdipGetMatrixElements(matrix, elements);
+		ASSERT_EQ(0, elements[4]);
+		ASSERT_EQ(0, elements[5]);
+	}
+
+	SHUTDOWN
+}
+
+TEST(MatrixTests, Invert_FloatBounds_ThrowsArgumentException) {
+	STARTUP
+
+	float values[3] = { NAN, INFINITY, -INFINITY };
+
+	for (int i = 0; i < 3; i++)
+	{
+		float f = values[i];
+		GpMatrix* matrix = NULL;
+
+		ASSERT_EQ(0, GdipCreateMatrix2(f, 0, 0, 1, 0, 0, &matrix));
+
+		ASSERT_EQ(InvalidParameter, GdipInvertMatrix(matrix));
+	}
+
+	SHUTDOWN
+}
+
+TEST(MatrixTests, Multiply_Matrix_Success) {
+	STARTUP
+
+	GpMatrix* matrix = NULL;
+	ASSERT_EQ(0, GdipCreateMatrix2(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, &matrix));
+
+	GpMatrix* multiple = NULL;
+	ASSERT_EQ(0, GdipCreateMatrix2(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, &multiple));
+
+	ASSERT_EQ(0, GdipMultiplyMatrix(matrix, multiple, MatrixOrderAppend));
+	
+
+	REAL* elements = (REAL*)malloc(6 * sizeof(float));;
+	GdipGetMatrixElements(matrix, elements);
+
+	for (int i = 0; i < 6; i++)
+	{
+		ASSERT_EQ(FLT_MAX, elements[i]);
+	}
+
+	SHUTDOWN
+}
+
+TEST(MatrixTests, Multiply_Matrix_Success2) {
+	STARTUP
+
+	GpMatrix* matrix = NULL;
+	ASSERT_EQ(0, GdipCreateMatrix2(10, 20, 30, 40, 50, 60, &matrix));
+
+	GpMatrix* multiple = NULL;
+	ASSERT_EQ(0, GdipCreateMatrix2(0, 0, 0, 0, 0, 0, &multiple));
+
+	ASSERT_EQ(0, GdipMultiplyMatrix(matrix, multiple, MatrixOrderAppend));
+
+
+	REAL* elements = (REAL*)malloc(6 * sizeof(float));
+	GdipGetMatrixElements(matrix, elements);
+
+	for (int i = 0; i < 6; i++)
+	{
+		ASSERT_EQ(0, elements[i]);
+	}
+
+	SHUTDOWN
+}
+
+TEST(MatrixTests, Multiply_Matrix_Success3) {
+	STARTUP
+
+	GpMatrix* matrix = NULL;
+	ASSERT_EQ(0, GdipCreateMatrix2(10, 20, 30, 40, 50, 60, &matrix));
+
+	GpMatrix* multiple = NULL;
+	ASSERT_EQ(0, GdipCreateMatrix2(0, 0, 0, 0, 0, 0, &multiple));
+
+	ASSERT_EQ(0, GdipMultiplyMatrix(matrix, multiple, MatrixOrderPrepend));
+
+	REAL* elements = (REAL*)malloc(6 * sizeof(float));
+	GdipGetMatrixElements(matrix, elements);
+
+	for (int i = 0; i < 4; i++)
+	{
+		ASSERT_EQ(0, elements[i]);
+	}
+	ASSERT_EQ(50, elements[4]);
+	ASSERT_EQ(60, elements[5]);
+
+	SHUTDOWN
+}
+
+//  yield return new object[]{ new Matrix(10, 20, 30, 40, 50, 60), new Matrix(0, 0, 0, 0, 0, 0), MatrixOrder.Prepend, new float[] { 0, 0, 0, 0, 50, 60 } };
+// yield return new object[]{ new Matrix(10, 20, 30, 40, 50, 60), new Matrix(0, 0, 0, 0, 0, 0), MatrixOrder.Append, new float[] { 0, 0, 0, 0, 0, 0 } };
