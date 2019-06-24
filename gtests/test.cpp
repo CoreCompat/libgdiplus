@@ -303,3 +303,98 @@ TEST(LinearGradientBrushTests, Ctor_EqualPoints_ThrowsOutOfMemoryException) {
 
 	SHUTDOWN
 }
+
+TEST(CustomLineCapTests, Ctor_InvalidLineCap_ReturnsFlat) {
+	STARTUP
+
+	LineCap caps[2] = { (LineCap)(LineCapFlat - 1), (LineCap)(LineCapCustom + 1) };
+
+	for (int i = 0; i < 2; i++)
+	{
+		LineCap cap = caps[i];
+
+		GpPath* fillPath;
+		GpPath* strokePath;
+		ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &fillPath));
+		ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &strokePath));
+
+		GpCustomLineCap* lineCap = NULL;
+		ASSERT_EQ(Ok, GdipCreateCustomLineCap(fillPath, strokePath, cap, 0, &lineCap));
+
+		LineCap baseCap;
+		ASSERT_EQ(Ok, GdipGetCustomLineCapBaseCap(lineCap, &baseCap));
+		ASSERT_EQ(LineCapFlat, baseCap);
+	}
+
+	SHUTDOWN
+}
+
+TEST(CustomLineCapTests, Ctor_Path_Path_LineCap_Float) {
+	STARTUP
+
+	LineCap caps[19] = 
+	{
+		(LineCap)(LineCapFlat - 1),
+		LineCapFlat,
+		LineCapSquare,
+		LineCapRound,
+		LineCapTriangle,
+		(LineCap)(LineCapTriangle + 1),
+		(LineCap)(LineCapNoAnchor - 1),
+		LineCapNoAnchor,
+		LineCapSquareAnchor,
+		LineCapRoundAnchor,
+		LineCapDiamondAnchor,
+		LineCapArrowAnchor,
+		(LineCap)(LineCapArrowAnchor + 1),
+		(LineCap)(LineCapAnchorMask - 1),
+		LineCapAnchorMask,
+		(LineCap)(LineCapAnchorMask + 1),
+		(LineCap)(LineCapCustom - 1),
+		LineCapCustom,
+		(LineCap)(LineCapCustom + 1) 
+	};
+
+	LineCap expectedCaps[19] =
+	{
+		LineCapFlat,
+		LineCapFlat,
+		LineCapSquare,
+		LineCapRound,
+		LineCapTriangle,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat,
+		LineCapFlat
+	};
+
+	for (int i = 0; i < 19; i++)
+	{
+		LineCap cap = caps[i];
+		LineCap expectedCap = expectedCaps[i];
+
+		GpPath* fillPath;
+		GpPath* strokePath;
+		ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &fillPath));
+		ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &strokePath));
+
+		GpCustomLineCap* lineCap = NULL;
+		ASSERT_EQ(Ok, GdipCreateCustomLineCap(fillPath, strokePath, cap, 0, &lineCap));
+
+		LineCap baseCap;
+		ASSERT_EQ(Ok, GdipGetCustomLineCapBaseCap(lineCap, &baseCap));
+		ASSERT_EQ(expectedCap, baseCap);
+	}
+
+	SHUTDOWN
+}
