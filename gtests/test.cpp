@@ -398,3 +398,9 @@ TEST(CustomLineCapTests, Ctor_Path_Path_LineCap_Float) {
 
 	SHUTDOWN
 }
+
+TEST(BitmapDataTests, PixelFormat_SetInvalid_ThrowsInvalidEnumException) {
+	STARTUP
+
+	SHUTDOWN
+}
