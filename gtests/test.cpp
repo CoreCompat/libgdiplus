@@ -292,5 +292,14 @@ TEST(MatrixTests, Multiply_Matrix_Success3) {
 	SHUTDOWN
 }
 
-//  yield return new object[]{ new Matrix(10, 20, 30, 40, 50, 60), new Matrix(0, 0, 0, 0, 0, 0), MatrixOrder.Prepend, new float[] { 0, 0, 0, 0, 50, 60 } };
-// yield return new object[]{ new Matrix(10, 20, 30, 40, 50, 60), new Matrix(0, 0, 0, 0, 0, 0), MatrixOrder.Append, new float[] { 0, 0, 0, 0, 0, 0 } };
+TEST(LinearGradientBrushTests, Ctor_EqualPoints_ThrowsOutOfMemoryException) {
+	STARTUP
+
+	GpPoint point1 = { 0, 1 };
+	GpPoint point2 = { 0, 1 };
+	GpLineGradient* gradient = NULL;
+
+	ASSERT_EQ(OutOfMemory, GdipCreateLineBrushI(&point1, &point2, 0x00FF00, 0x0000FF, WrapModeTile, &gradient));
+
+	SHUTDOWN
+}
