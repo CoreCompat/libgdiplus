@@ -835,3 +835,31 @@ TEST(ImageAttributesTests, SetThreshold_Threshold_Success) {
 
 	SHUTDOWN
 }
+
+TEST(ImageAttributesTests, SetOutputChannel_FlagType_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesOutputChannel(attributes, ColorAdjustTypeDefault, true, ColorChannelFlagsC));
+
+	ARGB green = 0xFF646464;
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(0xFFC6C6C6, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
