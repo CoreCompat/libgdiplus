@@ -399,8 +399,439 @@ TEST(CustomLineCapTests, Ctor_Path_Path_LineCap_Float) {
 	SHUTDOWN
 }
 
-TEST(BitmapDataTests, PixelFormat_SetInvalid_ThrowsInvalidEnumException) {
+TEST(GraphicsPathTests, AddArc_ZeroWidthHeight_ThrowsArgumentException) {
 	STARTUP
+
+	GpPath* path;
+	ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &path));
+
+	ASSERT_EQ(InvalidParameter, GdipAddPathArcI(path, 0, 0, 0, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathArcI(path, 0, 0, 1, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathArcI(path, 0, 0, 0, 1, 3.14, 3.14));
+
+	ASSERT_EQ(InvalidParameter, GdipAddPathArc(path, 0, 0, 0, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathArc(path, 0, 0, 1, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathArc(path, 0, 0, 0, 1, 3.14, 3.14));
+
+	ASSERT_EQ(Ok, GdipDeletePath(path));
+	SHUTDOWN
+}
+
+TEST(GraphicsPathTests, AddPie_ZeroWidthHeight_ThrowsArgumentException) {
+	STARTUP
+
+	GpPath* path;
+	ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &path));
+
+	ASSERT_EQ(InvalidParameter, GdipAddPathPieI(path, 0, 0, 0, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathPieI(path, 0, 0, 1, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathPieI(path, 0, 0, 0, 1, 3.14, 3.14));
+
+	ASSERT_EQ(InvalidParameter, GdipAddPathPie(path, 0, 0, 0, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathPie(path, 0, 0, 1, 0, 3.14, 3.14));
+	ASSERT_EQ(InvalidParameter, GdipAddPathPie(path, 0, 0, 0, 1, 3.14, 3.14));
+
+	ASSERT_EQ(Ok, GdipDeletePath(path));
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, ClearColorMatrix_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+
+	ColorMatrix colorMatrix = { {
+		{1, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 0, 1, 0},
+		{0, 0, 0, 0, 0}
+	} };
+
+	ColorMatrix grayMatrix = { {
+		{1, 0, 0, 0, 0},
+		{0, 2, 0, 0, 0},
+		{0, 0, 3, 0, 0},
+		{0, 0, 0, 1, 0},
+		{0, 0, 0, 0, 0}
+	} };
+
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorMatrix(attributes, ColorAdjustTypeDefault, TRUE, &colorMatrix, NULL, ColorMatrixFlagsDefault));
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorMatrix(attributes, ColorAdjustTypeDefault, TRUE, &colorMatrix, &grayMatrix, ColorMatrixFlagsDefault));
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorMatrix(attributes, ColorAdjustTypeDefault, false, NULL, NULL, ColorMatrixFlagsDefault));
+
+	ARGB green = 0xFF00FF00;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(green, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, ClearNoOp_Type_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesGamma(attributes, ColorAdjustTypeDefault, true, 2.2));
+
+	ColorMatrix colorMatrix = { {
+		{1, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 0, 1, 0},
+		{0, 0, 0, 0, 0}
+	} };
+
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorMatrix(attributes, ColorAdjustTypeDefault, TRUE, &colorMatrix, NULL, ColorMatrixFlagsDefault));
+	ASSERT_EQ(Ok, GdipSetImageAttributesNoOp(attributes, ColorAdjustTypeDefault, true));
+	ASSERT_EQ(Ok, GdipSetImageAttributesNoOp(attributes, ColorAdjustTypeDefault, false));
+
+	ARGB green = 0xFF64FF00;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(0xFF210000, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, SetGamma_Gamma_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesGamma(attributes, ColorAdjustTypeDefault, true, 2.2));
+
+	ARGB green = 0xFF64FF00;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(0xFF21FF00, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, ClearColorKey_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorKeys(attributes, ColorAdjustTypeDefault, true, 0x00323232, 0x00969696));
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorKeys(attributes, ColorAdjustTypeDefault, false, 0x00323232, 0x00969696));
+
+	ARGB green = 0xFF646464;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(green, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, ClearGamma_Type_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesGamma(attributes, ColorAdjustTypeDefault, true, 2.2));
+	ASSERT_EQ(Ok, GdipSetImageAttributesGamma(attributes, ColorAdjustTypeDefault, false, 0));
+
+	ARGB green = 0xFF64FF00;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(green, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, ClearOutputChannelColorProfile_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesOutputChannel(attributes, ColorAdjustTypeDefault, true, ColorChannelFlagsC));
+	ASSERT_EQ(Ok, GdipSetImageAttributesOutputChannel(attributes, ColorAdjustTypeDefault, false, ColorChannelFlagsC));
+
+	ARGB green = 0xFF64FF00;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(green, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, ClearRemapTable_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	ColorMap colorMap[1] = {
+		{ 0xFFFFFF00, 0xFFFF0000 }
+	};
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesRemapTable(attributes, ColorAdjustTypeDefault, true, 1, colorMap));
+	ASSERT_EQ(Ok, GdipSetImageAttributesRemapTable(attributes, ColorAdjustTypeDefault, false, 0, NULL));
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, colorMap[0].oldColor.Argb));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(colorMap[0].oldColor.Argb, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, ClearThreshold_ThresholdTypeI_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesThreshold(attributes, ColorAdjustTypeDefault, true, 0.7));
+	ASSERT_EQ(Ok, GdipSetImageAttributesThreshold(attributes, ColorAdjustTypeDefault, false, 0));
+
+	ARGB green = 0xFF64FF00;
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(green, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, GetAdjustedPalette_Disposed_ThrowsArgumentException) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipDisposeImageAttributes(attributes));
+	
+	int size = 0;
+	ASSERT_EQ(Ok, GdipGetImagePaletteSize(bitmap, &size));
+
+	ColorPalette* palette = (ColorPalette*)malloc(size);
+
+	ASSERT_EQ(Ok, GdipGetImagePalette(bitmap, palette, size));
+
+	ASSERT_EQ(InvalidParameter, GdipGetImageAttributesAdjustedPalette(attributes, palette, ColorAdjustTypeDefault));
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, SetColorKey_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorKeys(attributes, ColorAdjustTypeDefault, true, 0x00323232, 0x00969696));
+
+	ARGB green = 0xFF646464;
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(0x00000000, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, SetColorMatrices_InvalidFlags_ThrowsArgumentException) {
+	STARTUP
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+
+	ColorMatrix colorMatrix = { {
+		{1, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 0, 1, 0},
+		{0, 0, 0, 0, 0}
+	} };
+
+	ColorMatrixFlags flags[4] = {
+		(ColorMatrixFlags)(ColorMatrixFlagsDefault - 1),
+		(ColorMatrixFlags)(ColorMatrixFlagsAltGray + 1),
+		(ColorMatrixFlags)INT32_MAX,
+		(ColorMatrixFlags)INT32_MIN
+	};
+
+	for (int i = 0; i < 4; i++)
+	{
+		ASSERT_EQ(InvalidParameter, GdipSetImageAttributesColorMatrix(attributes, ColorAdjustTypeDefault, true, &colorMatrix, NULL, flags[i]));
+	}
+
+	ASSERT_EQ(Ok, GdipDisposeImageAttributes(attributes));
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, SetNoOp_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesGamma(attributes, ColorAdjustTypeDefault, true, 2.2));
+
+	ColorMatrix colorMatrix = { {
+		{1, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0},
+		{0, 0, 1, 0, 0},
+		{0, 0, 0, 1, 0},
+		{0, 0, 0, 0, 0}
+	} };
+
+	ASSERT_EQ(Ok, GdipSetImageAttributesColorMatrix(attributes, ColorAdjustTypeDefault, TRUE, &colorMatrix, NULL, ColorMatrixFlagsDefault));
+	ASSERT_EQ(Ok, GdipSetImageAttributesNoOp(attributes, ColorAdjustTypeDefault, true));
+
+	ARGB green = 0xFF64FF00;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(green, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+
+	SHUTDOWN
+}
+
+TEST(ImageAttributesTests, SetThreshold_Threshold_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(64, 64, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	GpImageAttributes* attributes;
+	ASSERT_EQ(Ok, GdipCreateImageAttributes(&attributes));
+	ASSERT_EQ(Ok, GdipSetImageAttributesThreshold(attributes, ColorAdjustTypeDefault, true, 0.7));
+
+	ARGB green = 0xFFE632DC;
+	ARGB actualColor = 0;
+
+	ASSERT_EQ(Ok, GdipBitmapSetPixel(bitmap, 0, 0, green));
+
+	ASSERT_EQ(Ok, GdipDrawImageRectRectI(graphics, bitmap, 0, 0, 64, 64, 0, 0, 64, 64, UnitPixel, attributes, NULL, NULL));
+
+	ASSERT_EQ(Ok, GdipBitmapGetPixel(bitmap, 0, 0, &actualColor));
+	ASSERT_EQ(0xFFFF00FF, actualColor);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
 
 	SHUTDOWN
 }
