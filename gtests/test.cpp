@@ -863,3 +863,33 @@ TEST(ImageAttributesTests, SetOutputChannel_FlagType_Success) {
 
 	SHUTDOWN
 }
+
+TEST(ImageAttributesTests, Ctor_IntPtrRectangleFMetafileFrameUnit_Success) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpGraphics* graphics = NULL;
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(10, 10, 0, PixelFormat32bppARGB, NULL, &bitmap));
+	ASSERT_EQ(Ok, GdipGetImageGraphicsContext(bitmap, &graphics));
+
+	HDC hdc = NULL;
+	ASSERT_EQ(Ok, GdipGetDC(graphics, &hdc));
+
+	GpRectF rect = { 0, 0, 64, 64 };
+	GpMetafile* metafile = NULL;
+	ASSERT_EQ(Ok, GdipRecordMetafile(hdc, EmfTypeEmfPlusDual, &rect, MetafileFrameUnitDocument, NULL, &metafile));
+
+	MetafileHeader header;
+
+	ASSERT_EQ(0, GdipGetMetafileHeaderFromMetafile(metafile, &header));
+
+	ASSERT_EQ(0, header.Width);
+	ASSERT_EQ(0, header.Height);
+	ASSERT_EQ(0, header.X);
+	ASSERT_EQ(0, header.Y);
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
