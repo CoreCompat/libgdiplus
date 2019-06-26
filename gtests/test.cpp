@@ -2,6 +2,7 @@
 
 // Define WIN32 to get a correct definition of ULONG_PTR
 #define WIN32
+#define M_PI 3.14159265358979323846
 #include "..\src\GdiPlusFlat.h"
 
 #define STARTUP \
@@ -890,6 +891,132 @@ TEST(ImageAttributesTests, Ctor_IntPtrRectangleFMetafileFrameUnit_Success) {
 
 	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
 	ASSERT_EQ(Ok, GdipDeleteGraphics(graphics));
+
+	SHUTDOWN
+}
+
+TEST(BitmapTests, Clone_RectangleF_ReturnsExpected) {
+	STARTUP
+
+	GpBitmap* bitmap = NULL;
+	GpBitmap* clone = NULL;
+
+	ASSERT_EQ(Ok, GdipCreateBitmapFromScan0(3, 3, 0, PixelFormat32bppARGB, NULL, &bitmap));
+
+	PixelFormat pixelFormats[2] = {
+		PixelFormat32bppARGB,
+		PixelFormat24bppRGB
+	};
+
+	PixelFormat pixelFormat;
+
+	for (int i = 0; i < 2; i++)
+	{
+		ASSERT_EQ(Ok, GdipCloneBitmapArea(0, 0, 3, 3, pixelFormats[i], bitmap, &clone));
+		ASSERT_EQ(Ok, GdipGetImagePixelFormat(bitmap, &pixelFormat));
+
+		ASSERT_EQ(pixelFormats[i], pixelFormat);
+		ASSERT_EQ(Ok, GdipDisposeImage(clone));
+	}
+
+	ASSERT_EQ(Ok, GdipDisposeImage(bitmap));
+	SHUTDOWN
+}
+
+TEST(FontFamilyTests, Ctor_NoSuchFontName_ThrowsArgumentException) {
+	STARTUP
+
+	GpFontFamily* fontFamily;
+
+	WCHAR* name = L"XYZ";
+
+	ASSERT_EQ(Ok, GdipCreateFontFamilyFromName(name, NULL, &fontFamily));
+
+	GpFont* font;
+	ASSERT_EQ(Ok, GdipCreateFont(fontFamily, 12, FontStyleRegular, (Unit)(UnitMillimeter + 1), &font));
+
+	GdipDeleteFont(font);
+	GdipDeleteFontFamily(fontFamily);
+	SHUTDOWN
+}
+
+TEST(GraphicsPathTests, AddArc_Rectangle_Success) {
+	STARTUP
+
+	GpPath* path = NULL;
+	ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &path));
+
+	GdipAddPathArc(path, 1, 1, 2, 2, M_PI / 4.0, M_PI / 4.0);
+
+	int pointCount = 0;
+	ASSERT_EQ(Ok, GdipGetPointCount(path, &pointCount));
+	ASSERT_EQ(4, pointCount);
+
+	GpPointF* points = (GpPointF*)malloc(sizeof(GpPointF) * pointCount);
+	BYTE* types = (BYTE*)malloc(sizeof(BYTE) * pointCount);
+
+	ASSERT_EQ(Ok, GdipGetPathPoints(path, points, pointCount));
+	ASSERT_EQ(Ok, GdipGetPathTypes(path, types, pointCount));
+
+	GpRectF bounds;
+	ASSERT_EQ(Ok, GdipGetPathWorldBounds(path, &bounds, NULL, NULL));
+
+	ASSERT_NEAR(2.99990582, points[0].X, 0.001);
+	ASSERT_NEAR(2.01370716, points[0].Y, 0.001);
+
+	ASSERT_NEAR(2.99984312, points[1].X, 0.001);
+	ASSERT_NEAR(2.018276, points[1].Y, 0.001);
+
+	ASSERT_NEAR(2.99974918, points[2].X, 0.001);
+	ASSERT_NEAR(2.02284455, points[2].Y, 0.001);
+
+	ASSERT_NEAR(2.999624, points[3].X, 0.001);
+	ASSERT_NEAR(2.027412, points[3].Y, 0.001);
+
+	ASSERT_EQ(0, types[0]);
+	ASSERT_EQ(3, types[1]);
+	ASSERT_EQ(3, types[2]);
+	ASSERT_EQ(3, types[3]);
+
+	ASSERT_NEAR(2.99962401, bounds.X, 0.001);
+	ASSERT_NEAR(2.01370716, bounds.Y, 0.001);
+	ASSERT_NEAR(0, bounds.Width, 0.001);
+	ASSERT_NEAR(0.0137047768, bounds.Height, 0.001);
+
+	SHUTDOWN
+}
+
+TEST(GraphicsPathTests, AddClosedCurve_Points_Success) {
+	STARTUP
+
+	GpPath* path = NULL;
+	ASSERT_EQ(Ok, GdipCreatePath(FillModeAlternate, &path));
+
+	GpPoint _points[3] = {
+		{ 1, 1 },
+		{ 2, 2 },
+		{ 3, 3 }
+	};
+
+	ASSERT_EQ(Ok, GdipAddPathClosedCurveI(path, _points, 3));
+
+	int pointCount = 0;
+	ASSERT_EQ(Ok, GdipGetPointCount(path, &pointCount));
+	ASSERT_EQ(10, pointCount);
+
+	GpPointF* points = (GpPointF*)malloc(sizeof(GpPointF) * pointCount);
+	BYTE* types = (BYTE*)malloc(sizeof(BYTE) * pointCount);
+
+	ASSERT_EQ(Ok, GdipGetPathPoints(path, points, pointCount));
+	ASSERT_EQ(Ok, GdipGetPathTypes(path, types, pointCount));
+
+	GpRectF bounds;
+	ASSERT_EQ(Ok, GdipGetPathWorldBounds(path, &bounds, NULL, NULL));
+
+	ASSERT_NEAR(0.8333333, bounds.X, 0.001);
+	ASSERT_NEAR(0.8333333, bounds.Y, 0.001);
+	ASSERT_NEAR(2.33333278, bounds.Width, 0.001);
+	ASSERT_NEAR(2.33333278, bounds.Height, 0.001);
 
 	SHUTDOWN
 }
