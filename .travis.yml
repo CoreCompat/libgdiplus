@@ -21,7 +21,7 @@ addons:
     - git
 
 install:
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install glib cairo libexif libjpeg giflib libtiff autoconf libtool automake pango pkg-config || true; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install glib cairo libexif libjpeg giflib libtiff autoconf libtool automake pango@1.42.4 pkg-config || true; fi
 
 script:
 - set -e
