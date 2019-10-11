@@ -240,23 +240,25 @@ stages:
 - stage: package
   jobs:
   - job: debian
-    matrix:
-      ubuntu_1804:
-        imageName: ubuntu/bionic
-      ubuntu_1604:
-        imageName: ubuntu/xenial
-      debian_9:
-        imageName: debian/9
-  pool:
-    vmImage: ubuntu-18.04
-  container:
-    image: $(imageName)
-    options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
-    steps:
-    - script: |
-        /tmp/docker exec -t -u 0 ci-container \
-        sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
-      displayName: Set up sudo
+    strategy:
+      maxParallel: 4
+      matrix:
+        ubuntu_1804:
+          imageName: ubuntu/bionic
+        ubuntu_1604:
+          imageName: ubuntu/xenial
+        debian_9:
+            imageName: debian/9
+    pool:
+      vmImage: ubuntu-18.04
+    container:
+      image: $(imageName)
+      options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
+      steps:
+      - script: |
+          /tmp/docker exec -t -u 0 ci-container \
+          sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
+        displayName: Set up sudo
 #  - job: rhel
 #    matrix:
 #      fedora_29:
