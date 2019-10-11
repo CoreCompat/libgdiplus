@@ -355,3 +355,28 @@ stages:
         artifactName: 'libgdiplus' 
         publishLocation: 'Container'
         displayName: Publish
+
+  - jobs: nuget
+    dependsOn:
+    - debian
+    - rhel
+    - macos
+    pool:
+      vmImage: ubuntu-18.04
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: 'libgdiplus'
+        targetPath: '$(Build.ArtifactStagingDirectory)/libgdiplus'
+
+    - script: |
+        dotnet pack -c Release /p:Version=6.0.4-ci-${BUILD_BUILDID} -o ${BUILD_ARTIFACTSTAGINGDIRECTORY}/nuget
+      workingDirectory: $(Build.SourcesDirectory)/nuget
+      displayName: Install build dependencies
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)/nuget'
+        artifactName: 'nuget'
+        publishLocation: 'Container'
+        displayName: Publish
