@@ -356,7 +356,7 @@ stages:
         publishLocation: 'Container'
         displayName: Publish
 
-  - jobs: nuget
+  - job: nuget
     dependsOn:
     - debian
     - rhel
