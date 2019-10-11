@@ -245,11 +245,11 @@ stages:
       maxParallel: 4
       matrix:
         ubuntu_1804:
-          imageName: ubuntu/bionic
+          imageName: ubuntu:18.04
         ubuntu_1604:
-          imageName: ubuntu/xenial
+          imageName: ubuntu:16.04
         debian_9:
-            imageName: debian/9
+            imageName: debian:9
     pool:
       vmImage: ubuntu-18.04
     container:
