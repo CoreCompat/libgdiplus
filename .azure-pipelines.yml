@@ -246,10 +246,13 @@ stages:
       matrix:
         ubuntu_1804:
           imageName: ubuntu:18.04
+          rid: ubuntu.18.04-x64
         ubuntu_1604:
           imageName: ubuntu:16.04
+          rid: ubuntu.16.04-x64
         debian_9:
-            imageName: debian:9
+          imageName: debian:9
+          rid: debian.9-x64
     pool:
       vmImage: ubuntu-18.04
     container:
@@ -260,6 +263,24 @@ stages:
         /tmp/docker exec -t -u 0 ci-container \
         sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confold" -y install sudo"
       displayName: Set up sudo
+
+    - bash: |
+        sudo apt -y install libpango1.0-dev libgif-dev libjpeg-dev libtiff-dev autoconf libtool automake build-essential
+      displayName: 'Install Linux dependencies'
+
+    - bash: |
+        export CFLAGS="-ggdb3 -O2"
+        ./autogen.sh --prefix=/usr --enable-warnaserror
+        make -j4
+        sudo make install DESTDIR=${BUILD_ARTIFACTSTAGINGDIRECTORY}/libgdiplus/$(RID)/
+      displayName: 'Build and Install libgdiplus'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)/libgdiplus' 
+        artifactName: 'libgdiplus' 
+        publishLocation: 'Container'
+        displayName: Publish
 #  - job: rhel
 #    matrix:
 #      fedora_29:
