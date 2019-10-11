@@ -1,4 +1,4 @@
-VERSIONINFO=-version-info 1.0.1
+VERSIONINFO = -version-info 1.0.1
 
 lib_LTLIBRARIES = libgdiplus.la
 
@@ -119,7 +119,7 @@ libgdiplus_la_SOURCES = \
 	wmfcodec.c			\
 	wmfcodec.h
 
-libgdiplus_la_LDFLAGS_EXTRA = $(VERSIONINFO)
+libgdiplus_la_LDFLAGS = $(VERSIONINFO)
 
 if USE_PANGO_RENDERING
 libgdiplus_la_SOURCES += \
