@@ -307,7 +307,7 @@ stages:
       displayName: Set up sudo
 
     - bash: |
-        sudo yum install -y cairo-devel fontconfig-devel giflib-devel glib2-devel libexif-devel libjpeg-devel libpng-devel libtiff-devel freetype-devel libtool automake make gcc gcc-c++
+        sudo yum install -y cairo-devel fontconfig-devel giflib-devel glib2-devel libexif-devel libjpeg-devel libpng-devel libtiff-devel freetype-devel libtool automake make gcc gcc-c++ git
       displayName: 'Install Linux dependencies'
 
     - bash: |
