@@ -1,3 +1,5 @@
+VERSIONINFO=-version-info 1.0.1
+
 lib_LTLIBRARIES = libgdiplus.la
 
 libgdiplus_la_SOURCES = \
@@ -116,6 +118,8 @@ libgdiplus_la_SOURCES = \
 	tiffcodec.c			\
 	wmfcodec.c			\
 	wmfcodec.h
+
+libgdiplus_la_LDFLAGS_EXTRA += $(VERSIONINFO)
 
 if USE_PANGO_RENDERING
 libgdiplus_la_SOURCES += \
