@@ -1,4 +1,4 @@
-VERSIONINFO = -version-info 1.0.1
+VERSIONINFO = -version-info 1:0:0
 
 lib_LTLIBRARIES = libgdiplus.la
 
