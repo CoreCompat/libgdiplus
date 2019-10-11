@@ -323,7 +323,34 @@ stages:
         artifactName: 'libgdiplus' 
         publishLocation: 'Container'
         displayName: Publish
-#  - job: rhel
-#    matrix:
-#      fedora_29:
-#      centos_7:
+
+  - job: macos
+    strategy:
+      maxParallel: 4
+      matrix:
+        osx_1013:
+          imageName: macOS-10.13
+          rid: osx.10.13-x64
+        osx_1014:
+          imageName: macOS-10.14
+          rid: osx.10.14-x64
+    pool:
+      vmImage: $(imageName)
+    steps:
+    - script: |
+        brew install glib cairo libexif libjpeg giflib libtiff autoconf libtool automake pango pkg-config cmake
+      displayName: Install build dependencies
+
+    - script: |
+          export CFLAGS="-m64 -arch x86_64 -mmacosx-version-min=10.9"
+          export LDFLAGS="-m64 -arch x86_64"
+          ./autogen.sh --prefix=/tmp/libgdiplus-dev --enable-warnaserror --without-x11 --host=x86_64-apple-darwin13.0.0 --build=x86_64-apple-darwin13.0.0
+          make -j4
+          make install DESTDIR=${BUILD_ARTIFACTSTAGINGDIRECTORY}/libgdiplus/$(RID)/
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)/libgdiplus' 
+        artifactName: 'libgdiplus' 
+        publishLocation: 'Container'
+        displayName: Publish
