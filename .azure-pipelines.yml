@@ -7,7 +7,7 @@ trigger:
 
 stages:
 - stage: build
-  condition: false()
+  condition: false
   displayName: Build
   jobs:
     ############ LINUX BUILD ############
