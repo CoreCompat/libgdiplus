@@ -265,7 +265,45 @@ stages:
       displayName: Set up sudo
 
     - bash: |
-        sudo apt -y install libpango1.0-dev libgif-dev libjpeg-dev libtiff-dev autoconf libtool automake build-essential
+        sudo apt -y install libpango1.0-dev libgif-dev libjpeg-dev libtiff-dev libexif-dev autoconf libtool automake build-essential
+      displayName: 'Install Linux dependencies'
+
+    - bash: |
+        export CFLAGS="-ggdb3 -O2"
+        ./autogen.sh --prefix=/usr --enable-warnaserror
+        make -j4
+        sudo make install DESTDIR=${BUILD_ARTIFACTSTAGINGDIRECTORY}/libgdiplus/$(RID)/
+      displayName: 'Build and Install libgdiplus'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)/libgdiplus' 
+        artifactName: 'libgdiplus' 
+        publishLocation: 'Container'
+        displayName: Publish
+
+  - job: rhel
+    strategy:
+      maxParallel: 4
+      matrix:
+        fedora_29 :
+          imageName: fedora:29
+          rid: fedora.29-x64
+        rhel_7:
+          imageName: centos:7
+          rid: rhel.7-x64
+        centos_7:
+          imageName: centos:7
+          rid: centos.7-x64
+    pool:
+      vmImage: ubuntu-18.04
+    container:
+      image: $(imageName)
+      options: "--name ci-container -v /usr/bin/docker:/tmp/docker:ro"
+    steps:
+
+    - bash: |
+        yum install -y cairo-devel fontconfig-devel giflib-devel glib2-devel libexif-devel libjpeg-devel libpng-devel libtiff-devel freetype-devel
       displayName: 'Install Linux dependencies'
 
     - bash: |
