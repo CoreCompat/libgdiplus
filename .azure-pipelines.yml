@@ -344,7 +344,8 @@ stages:
     - script: |
           export CFLAGS="-m64 -arch x86_64 -mmacosx-version-min=10.9"
           export LDFLAGS="-m64 -arch x86_64"
-          ./autogen.sh --prefix=/tmp/libgdiplus-dev --enable-warnaserror --without-x11 --host=x86_64-apple-darwin13.0.0 --build=x86_64-apple-darwin13.0.0
+          ./autogen.sh --enable-warnaserror --without-x11 --host=x86_64-apple-darwin13.0.0 --build=x86_64-apple-darwin13.0.0
+          cd src/
           make -j4
           make install DESTDIR=${BUILD_ARTIFACTSTAGINGDIRECTORY}/libgdiplus/$(RID)/
 
