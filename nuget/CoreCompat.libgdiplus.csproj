@@ -12,28 +12,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="$(LibgdiplusDir)/osx.10.13-x64/usr/local/lib/libgdiplus.0.dylib">
+    <Content Include="$(LibgdiplusDir)/osx.10.13-x64/usr/local/lib/libgdiplus.1.dylib">
       <PackagePath>runtimes/osx.10.13-x64/native/</PackagePath>
     </Content>
-    <Content Include="$(LibgdiplusDir)/osx.10.14-x64/usr/local/lib/libgdiplus.0.dylib">
+    <Content Include="$(LibgdiplusDir)/osx.10.14-x64/usr/local/lib/libgdiplus.1.dylib">
       <PackagePath>runtimes/osx.10.14-x64/native/</PackagePath>
     </Content>
-    <Content Include="$(LibgdiplusDir)/ubuntu.16.04-x64/usr/lib/libgdiplus.0.so">
+    <Content Include="$(LibgdiplusDir)/ubuntu.16.04-x64/usr/lib/libgdiplus.so.1">
       <PackagePath>runtimes/ubuntu.16.04-x64/native/</PackagePath>
     </Content>
-    <Content Include="$(LibgdiplusDir)/ubuntu.18.04-x64/usr/lib/libgdiplus.0.so">
+    <Content Include="$(LibgdiplusDir)/ubuntu.18.04-x64/usr/lib/libgdiplus.so.1">
       <PackagePath>runtimes/ubuntu.18.04-x64/native/</PackagePath>
     </Content>
-    <Content Include="$(LibgdiplusDir)/debian.9-x64/usr/lib/libgdiplus.0.so">
+    <Content Include="$(LibgdiplusDir)/debian.9-x64/usr/lib/libgdiplus.so.1">
       <PackagePath>runtimes/debian.9-x64/native/</PackagePath>
     </Content>
-    <Content Include="$(LibgdiplusDir)/centos.7-x64/usr/lib/libgdiplus.0.so">
+    <Content Include="$(LibgdiplusDir)/centos.7-x64/usr/lib/libgdiplus.so.1">
       <PackagePath>runtimes/centos.7-x64/native/</PackagePath>
     </Content>
-    <Content Include="$(LibgdiplusDir)/rhel.7-x64/usr/lib/libgdiplus.0.so">
+    <Content Include="$(LibgdiplusDir)/rhel.7-x64/usr/lib/libgdiplus.so.1">
       <PackagePath>runtimes/rhel.7-x64/native/</PackagePath>
     </Content>
-    <Content Include="$(LibgdiplusDir)/fedora.29-x64/usr/lib/libgdiplus.0.so">
+    <Content Include="$(LibgdiplusDir)/fedora.29-x64/usr/lib/libgdiplus.so.1">
       <PackagePath>runtimes/fedora.29-x64/native/</PackagePath>
     </Content>
   </ItemGroup>
